@@ -1,176 +1,540 @@
-// ===== Hamburger menu (JS-driven, menggantikan checkbox hack) =====
+// ========================================
+// HAMBURGER MENU
+// ========================================
+
 function initNavToggle() {
-    const toggleBtn = document.getElementById("nav-toggle-btn");
-    const nav = document.querySelector("header nav");
+
+    const toggleBtn =
+        document.getElementById("nav-toggle-btn");
+
+    const nav =
+        document.querySelector("header nav");
+
     if (!toggleBtn || !nav) return;
 
     toggleBtn.addEventListener("click", function () {
+
         nav.classList.toggle("nav-open");
+
     });
+
 }
 
-// ===== Konfirmasi hapus (front-end only, belum ke server) =====
+
+// ========================================
+// KONFIRMASI HAPUS + EVENT DELEGATION
+// ========================================
+
 function initHapusConfirm() {
+
     document.addEventListener("click", function (e) {
-        const btn = e.target.closest(".btn-hapus");
+
+        // Untuk pengujian Event Delegation
+        console.log(e.target);
+
+
+        const btn =
+            e.target.closest(".btn-hapus");
+
         if (!btn) return;
 
-        const row = btn.closest("tr");
-        const nama = row ? row.querySelector("td")?.textContent : "data ini";
-        const yakin = confirm("Yakin ingin menghapus \"" + nama + "\"?");
+
+        const row =
+            btn.closest("tr");
+
+
+        const nama =
+            row?.querySelectorAll("td")[1]?.textContent ||
+            "data ini";
+
+
+        const yakin =
+            confirm(
+                'Yakin ingin menghapus "' +
+                nama +
+                '"?'
+            );
+
+
         if (yakin && row) {
+
             row.remove();
-            const table = document.querySelector(".table-responsive table");
-            const counter = document.getElementById("counter-info");
-            if (table && counter) {
-                const semuaBaris = table.querySelectorAll("tbody tr");
-                counter.textContent = "Menampilkan " + semuaBaris.length + " dari " + semuaBaris.length + " data";
-            }
+
+            perbaruiCounter();
+
         }
+
     });
+
 }
 
-// ===== Filter/pencarian tabel real-time =====
+
+// ========================================
+// COUNTER DATA
+// ========================================
+
+function perbaruiCounter() {
+
+    const counterInfo =
+        document.getElementById("counter-info");
+
+    const table =
+        document.querySelector(
+            ".table-responsive table"
+        );
+
+    if (!counterInfo || !table) return;
+
+
+    const rows =
+        table.querySelectorAll("tbody tr");
+
+
+    let jumlahTampil = 0;
+
+    const jumlahTotal =
+        rows.length;
+
+
+    rows.forEach(function (row) {
+
+        if (row.style.display !== "none") {
+
+            jumlahTampil++;
+
+        }
+
+    });
+
+
+    counterInfo.textContent =
+        "Menampilkan " +
+        jumlahTampil +
+        " dari " +
+        jumlahTotal +
+        " data";
+
+}
+
+
+// ========================================
+// PENCARIAN REAL-TIME
+// ========================================
+
 function initTableFilter() {
-    const input = document.getElementById("search-input");
-    const table = document.querySelector(".table-responsive table");
+
+    const input =
+        document.getElementById("search-input");
+
+    const table =
+        document.querySelector(
+            ".table-responsive table"
+        );
+
     if (!input || !table) return;
 
-    function perbaruiCounter() {
-        const counter = document.getElementById("counter-info");
-        if (!counter) return;
-        const semuaBaris = table.querySelectorAll("tbody tr");
-        const barisTampil = table.querySelectorAll("tbody tr:not([style*='display: none'])");
-        counter.textContent = "Menampilkan " + barisTampil.length + " dari " + semuaBaris.length + " data";
-    }
 
-    input.addEventListener("keyup", function () {
-        const keyword = input.value.toLowerCase();
-        const rows = table.querySelectorAll("tbody tr");
-        rows.forEach(function (row) {
-            const teks = row.querySelector("td")?.textContent.toLowerCase() ?? "";
-            row.style.display = teks.includes(keyword) ? "" : "none";
-        });
-        perbaruiCounter();
-    });
-    perbaruiCounter();
+    input.addEventListener(
+        "input",
+        function () {
+
+            const keyword =
+                input.value
+                    .toLowerCase()
+                    .trim();
+
+
+            const rows =
+                table.querySelectorAll(
+                    "tbody tr"
+                );
+
+
+            rows.forEach(function (row) {
+
+                const teks =
+                    row.textContent
+                        .toLowerCase();
+
+
+                if (teks.includes(keyword)) {
+
+                    row.style.display = "";
+
+                } else {
+
+                    row.style.display = "none";
+
+                }
+
+            });
+
+
+            perbaruiCounter();
+
+        }
+    );
+
 }
 
-// ===== Validasi form (client-side) =====
-function tampilkanError(input, pesan) {
+
+// ========================================
+// TAMPILKAN ERROR
+// ========================================
+
+function tampilkanError(
+    input,
+    pesan
+) {
+
     hapusError(input);
-    const span = document.createElement("span");
-    span.className = "error";
-    span.textContent = pesan;
-    input.insertAdjacentElement("afterend", span);
+
+
+    const span =
+        document.createElement("span");
+
+
+    span.className =
+        "error";
+
+
+    span.textContent =
+        pesan;
+
+
+    input.insertAdjacentElement(
+        "afterend",
+        span
+    );
+
 }
+
+
+// ========================================
+// HAPUS ERROR
+// ========================================
 
 function hapusError(input) {
-    const next = input.nextElementSibling;
-    if (next && next.classList.contains("error")) {
+
+    const next =
+        input.nextElementSibling;
+
+
+    if (
+        next &&
+        next.classList.contains("error")
+    ) {
+
         next.remove();
+
     }
+
 }
+
+
+// ========================================
+// VALIDASI FORM
+// ========================================
 
 function initValidasiForm() {
-    const form = document.getElementById("form-tambah");
+
+    const form =
+        document.getElementById(
+            "form-tambah"
+        );
+
+
     if (!form) return;
 
-     const aturanValidasi = [
-        {
-            selector: "[name='judul'], [name='nama']",
-            cek: function (nilai) { return nilai.trim() !== ""; },
-            pesan: "Field ini wajib diisi."
-        },
-        {
-            selector: "[name='pengarang']",
-            cek: function (nilai) { return nilai.trim() !== ""; },
-            pesan: "Pengarang wajib diisi."
-        },
-        {
-            selector: "[name='tahun']",
-            cek: function (nilai) {
-                const n = parseInt(nilai, 10);
-                return !isNaN(n) && n >= 1900 && n <= 2026;
-            },
-            pesan: "Tahun harus di antara 1900-2026."
-        },
-        {
-            selector: "[name='stok']",
-            cek: function (nilai) {
-                const n = parseInt(nilai, 10);
-                return !isNaN(n) && n >= 0;
-            },
-            pesan: "Stok tidak boleh negatif."
-        },
-        {
-            selector: "[name='isbn']",
-            cek: function (nilai) {
-                if (nilai.trim() === "") return true;
-                return /^[0-9-]+$/.test(nilai.trim());
-            },
-            pesan: "ISBN hanya boleh berisi angka dan tanda hubung."
-        }
-    ];
 
-    form.addEventListener("submit", function (e) {
-        let valid = true;
+    form.addEventListener(
+        "submit",
+        function (e) {
 
-        aturanValidasi.forEach(function (aturan) {
-            const field = form.querySelector(aturan.selector);
-            if (!field) return;
+            let valid = true;
 
-            if (aturan.cek(field.value)) {
-                hapusError(field);
-            } else {
-                tampilkanError(field, aturan.pesan);
+
+            // ========================================
+            // VALIDASI NAMA
+            // ========================================
+
+            const nama =
+                form.querySelector(
+                    "[name='nama']"
+                );
+
+
+            if (
+                nama &&
+                nama.value.trim() === ""
+            ) {
+
+                tampilkanError(
+                    nama,
+                    "Nama wajib diisi."
+                );
+
                 valid = false;
-            }
-        });
 
-        if (!valid) {
-            e.preventDefault();
+            } else if (nama) {
+
+                hapusError(nama);
+
+            }
+
+
+            // ========================================
+            // VALIDASI JUDUL
+            // ========================================
+
+            const judul =
+                form.querySelector(
+                    "[name='judul']"
+                );
+
+
+            if (
+                judul &&
+                judul.value.trim() === ""
+            ) {
+
+                tampilkanError(
+                    judul,
+                    "Judul wajib diisi."
+                );
+
+                valid = false;
+
+            } else if (judul) {
+
+                hapusError(judul);
+
+            }
+
+
+            // ========================================
+            // VALIDASI ISBN
+            // ========================================
+
+            const isbn =
+                form.querySelector(
+                    "[name='isbn']"
+                );
+
+
+            if (
+                isbn &&
+                isbn.value.trim() !== ""
+            ) {
+
+                const polaISBN =
+                    /^[0-9-]+$/;
+
+
+                if (
+                    !polaISBN.test(
+                        isbn.value.trim()
+                    )
+                ) {
+
+                    tampilkanError(
+                        isbn,
+                        "ISBN hanya boleh berisi angka dan tanda hubung."
+                    );
+
+                    valid = false;
+
+                } else {
+
+                    hapusError(isbn);
+
+                }
+
+            }
+
+
+            // ========================================
+            // CEGAH SUBMIT
+            // ========================================
+
+            if (!valid) {
+
+                e.preventDefault();
+
+            }
+
         }
-    });
+    );
+
 }
-// ===== Fungsi generik: fetch + render tabel dari JSON =====
-async function muatDataTabel(url, buatBarisHTML) {
-    const tbody = document.querySelector(".table-responsive table tbody");
-    const loading = document.getElementById("loading-indicator");
+
+
+// ========================================
+// LOAD DATA TABEL
+// ========================================
+
+async function muatDataTabel(
+    url,
+    buatBarisHTML
+) {
+
+    const tbody =
+        document.querySelector(
+            ".table-responsive table tbody"
+        );
+
+
+    const loading =
+        document.getElementById(
+            "loading-indicator"
+        );
+
+
     if (!tbody) return;
 
-    loading.style.display = "block";
+
+    // TAMPILKAN LOADING
+
+    if (loading) {
+
+        loading.style.display =
+            "block";
+
+    }
+
+
+    // KOSONGKAN TABEL
+
     tbody.innerHTML = "";
 
+
     try {
-        await new Promise((resolve) => setTimeout(resolve, 600));
 
-        const res = await fetch(url);
-        if (!res.ok) {
-            throw new Error("Gagal mengambil data (status " + res.status + ")");
-        }
-        const daftarData = await res.json();
+        // ========================================
+        // DELAY 3 DETIK
+        // ========================================
 
-        daftarData.forEach(function (item) {
-            const tr = document.createElement("tr");
-            tr.innerHTML = buatBarisHTML(item);
-            tbody.appendChild(tr);
+        await new Promise(function (resolve) {
+
+            setTimeout(
+                resolve,
+                3000
+            );
+
         });
 
-        const counter = document.getElementById("counter-info");
-        if (counter) {
-            counter.textContent = "Menampilkan " + daftarData.length + " dari " + daftarData.length + " data";
+
+        // ========================================
+        // AMBIL DATA JSON
+        // ========================================
+
+        const res =
+            await fetch(url);
+
+
+        // ========================================
+        // CEK RESPONSE
+        // ========================================
+
+        if (!res.ok) {
+
+            throw new Error(
+                "Gagal mengambil data. Status: " +
+                res.status
+            );
+
         }
+
+
+        // ========================================
+        // PARSING JSON
+        // ========================================
+
+        const daftarData =
+            await res.json();
+
+
+        // ========================================
+        // MASUKKAN DATA KE TABEL
+        // ========================================
+
+        daftarData.forEach(
+            function (item) {
+
+                const tr =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                tr.innerHTML =
+                    buatBarisHTML(item);
+
+
+                tbody.appendChild(tr);
+
+            }
+        );
+
+
+        // ========================================
+        // UPDATE COUNTER
+        // ========================================
+
+        perbaruiCounter();
+
+
     } catch (err) {
+
+        // ========================================
+        // TAMPILKAN ERROR
+        // ========================================
+
         tbody.innerHTML =
-            "<tr><td colspan=\"5\">Gagal memuat data: " + err.message + "</td></tr>";
+            "<tr>" +
+            "<td colspan='5'>" +
+            "Gagal memuat data: " +
+            err.message +
+            "</td>" +
+            "</tr>";
+
+
+        perbaruiCounter();
+
+
     } finally {
-        loading.style.display = "none";
+
+        // ========================================
+        // SEMBUNYIKAN LOADING
+        // ========================================
+
+        if (loading) {
+
+            loading.style.display =
+                "none";
+
+        }
+
     }
+
 }
-document.addEventListener("DOMContentLoaded", function () {
-    initNavToggle();
-    initHapusConfirm();
-    initTableFilter();
-    initValidasiForm();
-});
+
+
+// ========================================
+// JALANKAN SEMUA
+// ========================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        initNavToggle();
+
+        initHapusConfirm();
+
+        initTableFilter();
+
+        initValidasiForm();
+
+    }
+);
