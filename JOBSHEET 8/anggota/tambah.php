@@ -1,36 +1,34 @@
 <?php
-session_start();
+$page_title = "Tambah Anggota";
+include __DIR__ . '/../includes/header.php';
+$flash = $_SESSION['flash'] ?? null;
+unset($_SESSION['flash']);
+?>
+<section>
+    <h2>Tambah Anggota</h2>
 
-$nama = trim($_POST['nama'] ?? '');
-$noAnggota = trim($_POST['no_anggota'] ?? '');
-$alamat = trim($_POST['alamat'] ?? '');
-$noHp = trim($_POST['no_hp'] ?? '');
+    <?php if ($flash): ?>
+        <p class="flash flash-<?php echo $flash['type']; ?>"><?php echo htmlspecialchars($flash['pesan']); ?></p>
+    <?php endif; ?>
 
-$errors = [];
-if ($nama === '') {
-    $errors[] = "Nama wajib diisi.";
-}
-if ($noAnggota === '') {
-    $errors[] = "No. Anggota wajib diisi.";
-}
-
-if (!empty($errors)) {
-    $_SESSION['flash'] = ['type' => 'error', 'pesan' => implode(' ', $errors)];
-    header('Location: tambah.php');
-    exit;
-}
-
-if (!isset($_SESSION['anggota'])) {
-    $_SESSION['anggota'] = [];
-}
-
-$_SESSION['anggota'][] = [
-    'nama' => $nama,
-    'no_anggota' => $noAnggota,
-    'alamat' => $alamat,
-    'no_hp' => $noHp,
-];
-
-$_SESSION['flash'] = ['type' => 'success', 'pesan' => 'Anggota berhasil ditambahkan.'];
-header('Location: list.php');
-exit;
+    <form id="form-tambah" action="proses_tambah.php" method="post">
+        <p>
+            <label for="nama">Nama</label>
+            <input type="text" id="nama" name="nama">
+        </p>
+        <p>
+            <label for="no_anggota">No. Anggota</label>
+            <input type="text" id="no_anggota" name="no_anggota">
+        </p>
+        <p>
+            <label for="alamat">Alamat</label>
+            <input type="text" id="alamat" name="alamat">
+        </p>
+        <p>
+            <label for="no_hp">No. HP</label>
+            <input type="text" id="no_hp" name="no_hp">
+        </p>
+        <p><button type="submit">Simpan</button></p>
+    </form>
+</section>
+<?php include __DIR__ . '/../includes/footer.php'; ?>

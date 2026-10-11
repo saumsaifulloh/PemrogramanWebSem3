@@ -30,8 +30,6 @@ if (!empty($errors)) {
 
 require __DIR__ . '/../includes/koneksi.php';
 
-// ...validasi (tidak berubah dari jobsheet-07)...
-
 $stmt = $pdo->prepare(
     "INSERT INTO buku (judul, pengarang, tahun, isbn, stok, kategori)
      VALUES (:judul, :pengarang, :tahun, :isbn, :stok, :kategori)

@@ -1,55 +1,45 @@
 <?php
-$page_title = "Daftar Anggota";
-include __DIR__ . '/../includes/header.php';
+session_start();
 
-$flash = $_SESSION['flash'] ?? null;
-unset($_SESSION['flash']);
-$daftarAnggota = $_SESSION['anggota'] ?? [];
-?>
-        <section>
-            <h2>Daftar Anggota</h2>
+$nama      = trim($_POST['nama'] ?? '');
+$noAnggota = trim($_POST['no_anggota'] ?? '');
+$alamat    = trim($_POST['alamat'] ?? '');
+$noHp      = trim($_POST['no_hp'] ?? '');
 
-            <?php if ($flash): ?>
-                <p class="flash flash-<?php echo $flash['type']; ?>"><?php echo $flash['pesan']; ?></p>
-            <?php endif; ?>
+$errors = [];
+if ($nama === '')      $errors[] = "Nama wajib diisi.";
+if ($noAnggota === '') $errors[] = "No. Anggota wajib diisi.";
 
-            <div class="search-box">
-                <label for="search-input">Cari Nama Anggota</label>
-                <input type="text" id="search-input" placeholder="Ketik nama anggota...">
-            </div>
+if (!empty($errors)) {
+    $_SESSION['flash'] = ['type' => 'error', 'pesan' => implode(' ', $errors)];
+    header('Location: tambah.php');
+    exit;
+}
 
-            <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>No. Anggota</th>
-                        <th>Nama</th>
-                        <th>Alamat</th>
-                        <th>No. HP</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($daftarAnggota)): ?>
-                    <tr>
-                        <td colspan="5">Belum ada data anggota. Silakan tambah lewat menu "Tambah Anggota".</td>
-                    </tr>
-                    <?php else: ?>
-                        <?php foreach ($daftarAnggota as $anggota): ?>
-                        <tr>
-                            <td><?php echo $anggota['no_anggota']; ?></td>
-                            <td><?php echo $anggota['nama']; ?></td>
-                            <td><?php echo $anggota['alamat']; ?></td>
-                            <td><?php echo $anggota['no_hp']; ?></td>
-                            <td>
-                                <button type="button">Edit</button>
-                                <button type="button" class="btn-hapus">Hapus</button>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-            </div>
-        </section>
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+require __DIR__ . '/../includes/koneksi.php';
+
+try {
+    $stmt = $pdo->prepare(
+        "INSERT INTO anggota (nama, no_anggota, alamat, no_hp)
+         VALUES (:nama, :no_anggota, :alamat, :no_hp)
+         RETURNING id"
+    );
+    $stmt->execute([
+        'nama'       => $nama,
+        'no_anggota' => $noAnggota,
+        'alamat'     => $alamat,
+        'no_hp'      => $noHp,
+    ]);
+} catch (PDOException $e) {
+    // 23505 = unique_violation (no_anggota sudah dipakai)
+    $pesan = $e->getCode() === '23505'
+        ? 'No. Anggota sudah terdaftar.'
+        : 'Gagal menyimpan data.';
+    $_SESSION['flash'] = ['type' => 'error', 'pesan' => $pesan];
+    header('Location: tambah.php');
+    exit;
+}
+
+$_SESSION['flash'] = ['type' => 'success', 'pesan' => 'Anggota berhasil ditambahkan.'];
+header('Location: list.php');
+exit;
