@@ -11,13 +11,13 @@ $base = $__rel === '' ? '' : str_repeat('../', substr_count($__rel, '/') + 1);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SIMPUS-Mini | Beranda<?php echo isset($page_title) ? ' | ' . $page_title : ''; ?></title>
+    <title>SIMPUS-Mini | <?php echo htmlspecialchars($page_title ?? 'Beranda'); ?></title>
     <link rel="stylesheet" href="<?php echo $base; ?>assets/css/style.css">
 </head>
 <body>
 <header>
     <h1>
-        <a href="<?php echo $base; ?>index.html">
+        <a href="<?php echo $base; ?>index.php">
             SIMPUS-Mini
         </a>
     </h1>
@@ -60,4 +60,3 @@ $base = $__rel === '' ? '' : str_repeat('../', substr_count($__rel, '/') + 1);
     </nav>
 </header>
 <main>
-```
